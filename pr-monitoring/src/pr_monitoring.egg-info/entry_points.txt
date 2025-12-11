@@ -1,0 +1,2 @@
+[console_scripts]
+pr-monitoring = pr_monitoring:main

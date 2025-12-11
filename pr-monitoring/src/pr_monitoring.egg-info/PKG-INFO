@@ -1,0 +1,96 @@
+Metadata-Version: 2.4
+Name: pr-monitoring
+Version: 0.1.0
+Summary: Add your description here
+Requires-Python: >=3.12
+Description-Content-Type: text/markdown
+Requires-Dist: python-dotenv>=1.2.1
+Requires-Dist: pytz>=2025.2
+Requires-Dist: requests>=2.32.5
+
+# PR Monitoring System
+
+A comprehensive system for monitoring GitHub Pull Request activity across teams with intelligent caching and detailed analytics.
+
+## Features
+
+- **Smart Caching**: Historical PR data is cached locally to minimize GitHub API calls
+- **Time Zone Aware**: All timestamps are converted to your configured timezone 
+- **Working Hours Analysis**: Classify PR activity as within/outside working hours
+- **Daily Activity States**: Track "Not Sent", "Sent In Time", "Sent Outside Time"
+- **Comprehensive Reports**: CSV and JSON reports with daily activity and summaries
+- **User Filtering**: Exclude specific users and filter by email patterns
+
+## Quick Start
+
+1. **Install dependencies**:
+   ```bash
+   uv sync
+   ```
+
+2. **Configure environment**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your GitHub token and settings
+   ```
+
+3. **Run analysis**:
+   ```bash
+   uv run python -m pr_monitoring
+   ```
+
+## Configuration
+
+Key settings in `.env`:
+
+- `GITHUB_TOKEN`: Your GitHub personal access token
+- `GITHUB_ORGANIZATION`: Organization name
+- `GITHUB_TEAM`: Team slug
+- `PROJECT_TIMEZONE`: Timezone for analysis (e.g., America/Lima)
+- `WORK_START_HOUR` / `WORK_END_HOUR`: Working hours (24h format)
+- `EXCLUSION_LIST`: Comma-separated list of users to exclude
+
+## Usage Examples
+
+```bash
+# Analyze last 7 days (default)
+uv run python -m pr_monitoring
+
+# Custom date range
+uv run python -m pr_monitoring --start-date 2025-12-01 --end-date 2025-12-05
+
+# Verbose output
+uv run python -m pr_monitoring --verbose
+
+# Custom output prefix
+uv run python -m pr_monitoring --output-prefix team_report
+```
+
+## Architecture
+
+The system follows the SRS specification with:
+
+- **Database Layer**: SQLite for caching and storage
+- **GitHub API Layer**: GraphQL client with pagination
+- **Analysis Engine**: Time zone conversion and working hours classification
+- **Report Generation**: Multiple output formats (CSV, JSON)
+- **Intelligent Caching**: Historical data treated as immutable
+
+## Cache Optimization
+
+- Historical dates: Cached once, never re-queried
+- Current date: Always refreshed to capture new activity
+- Minimizes API calls: `users × (missing historical days + 1 for today)`
+
+## Output Files
+
+- `*_daily_*.csv`: Per-user daily activity states
+- `*_summary_*.csv`: Aggregated statistics per user
+- `*_users_*.csv`: User metadata and filtering results  
+- `*_full_*.json`: Complete data export
+
+## Requirements
+
+- Python 3.10+
+- GitHub personal access token with `read:org` and `read:user` scopes
+- Team membership in target organization
